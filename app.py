@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
 
-app = Flask(__name__)
+app = Flask(_name_)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 db = SQLAlchemy(app)
 
@@ -12,7 +12,7 @@ class Todo(db.Model):
     content = db.Column(db.String(200), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def __repr__(self):
+    def _repr_(self):
         return '<Task %r>' % self.id
 
 db.create_all()
@@ -46,9 +46,19 @@ def delete(id):
     
     
 
-@app.route('/update')
-def update():
-    return render_template('update.html')
+@app.route('/update/<int:id>', methods=['POST', 'GET'])
+def update(id):
+    task = Todo.query.get_or_404(id)
 
-if __name__ == '__main__':
+    if request.method == 'POST':
+        task.content = request.form['contentNew']
+        try:
+            db.session.commit()
+            return redirect('/')
+        except:
+            return 'There was a problem updating your task.'
+    else:
+        return render_template('update.html', task=task)
+
+if _name_ == '_main_':
     app.run(debug=True)
